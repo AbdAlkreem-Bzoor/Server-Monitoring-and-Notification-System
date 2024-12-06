@@ -8,7 +8,7 @@ while (true)
 {
     IServerStatistics statistics = factory.GetStatistics();
 
-    IMessageQueuePublisher publisher = new RabbitMQPublisher(statistics);
+    IPublisher publisher = new RabbitMQPublisher(statistics);
 
     if (publisher.PublishMessage())
     {
