@@ -1,15 +1,25 @@
-﻿using MessageProcessingAnomalyDetection.Interfaces;
+﻿using MessageProcessingAnomalyDetection.Database.MongoDB;
+using MessageProcessingAnomalyDetection.Interfaces;
 using MessageProcessingAnomalyDetection.Statistics;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Collections;
 using System.Text;
 using System.Text.Json;
 
 namespace MessageProcessingAnomalyDetection.Receivers
 {
-    public class RabbitMQReceiver : IReceiver
+    public class RabbitMQReceiver : IMessageQueueReceiver
     {
+        public IDatabaseMongoDB Database { get; set; }
+        public RabbitMQReceiver(IDatabaseMongoDB database)
+        {
+            Database = database;
+        }
+
         public IServerStatistics? GetMessage()
         {
             try
@@ -20,12 +30,12 @@ namespace MessageProcessingAnomalyDetection.Receivers
 
                 var settings = new
                 {
-                    SamplingIntervalSeconds = int.Parse(config.GetSection("ServerStatisticsConfig:SamplingIntervalSeconds").Value ?? string.Empty),
-                    ServerIdentifier = config.GetSection("ServerStatisticsConfig:ServerIdentifier").Value ?? string.Empty,
-                    ConnectionString = config.GetSection("RabbitMQConfig:ConnectionString").Value ?? string.Empty,
-                    ExchangeName = config.GetSection("RabbitMQConfig:ExchangeName").Value ?? string.Empty,
-                    QueueName = config.GetSection("RabbitMQConfig:QueueName").Value ?? string.Empty,
-                    RoutingKey = config.GetSection("RabbitMQConfig:RoutingKey").Value ?? string.Empty
+                    SamplingIntervalSeconds = int.Parse(config["ServerStatisticsConfig:SamplingIntervalSeconds"] ?? string.Empty),
+                    ServerIdentifier = config["ServerStatisticsConfig:ServerIdentifier"] ?? string.Empty,
+                    ConnectionString = config["RabbitMQConfig:ConnectionString"] ?? string.Empty,
+                    ExchangeName = config["RabbitMQConfig:ExchangeName"] ?? string.Empty,
+                    QueueName = config["RabbitMQConfig:QueueName"] ?? string.Empty,
+                    RoutingKey = config["RabbitMQConfig:RoutingKey"] ?? string.Empty
                 };
 
                 var factory = new ConnectionFactory()
@@ -48,7 +58,7 @@ namespace MessageProcessingAnomalyDetection.Receivers
 
                 if (result is not null)
                 {
-                    Thread.Sleep(settings.SamplingIntervalSeconds * 1);
+                    Thread.Sleep(settings.SamplingIntervalSeconds * 1000);
 
                     var body = result.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
@@ -59,6 +69,8 @@ namespace MessageProcessingAnomalyDetection.Receivers
                     Console.WriteLine("______________________________________________");
 
                     channel.BasicAck(result.DeliveryTag, false);
+
+                    Database.Insert(serverStats).Wait();
 
                     return serverStats;
                 }
@@ -83,12 +95,12 @@ namespace MessageProcessingAnomalyDetection.Receivers
 
             var settings = new
             {
-                SamplingIntervalSeconds = int.Parse(config.GetSection("ServerStatisticsConfig:SamplingIntervalSeconds").Value ?? string.Empty),
-                ServerIdentifier = config.GetSection("ServerStatisticsConfig:ServerIdentifier").Value ?? string.Empty,
-                ConnectionString = config.GetSection("RabbitMQConfig:ConnectionString").Value ?? string.Empty,
-                ExchangeName = config.GetSection("RabbitMQConfig:ExchangeName").Value ?? string.Empty,
-                QueueName = config.GetSection("RabbitMQConfig:QueueName").Value ?? string.Empty,
-                RoutingKey = config.GetSection("RabbitMQConfig:RoutingKey").Value ?? string.Empty
+                SamplingIntervalSeconds = int.Parse(config["ServerStatisticsConfig:SamplingIntervalSeconds"] ?? string.Empty),
+                ServerIdentifier = config["ServerStatisticsConfig:ServerIdentifier"] ?? string.Empty,
+                ConnectionString = config["RabbitMQConfig:ConnectionString"] ?? string.Empty,
+                ExchangeName = config["RabbitMQConfig:ExchangeName"] ?? string.Empty,
+                QueueName = config["RabbitMQConfig:QueueName"] ?? string.Empty,
+                RoutingKey = config["RabbitMQConfig:RoutingKey"] ?? string.Empty
             };
             var factory = new ConnectionFactory()
             {
@@ -117,7 +129,7 @@ namespace MessageProcessingAnomalyDetection.Receivers
 
             async void Consumer_Received(object? sender, BasicDeliverEventArgs e)
             {
-                await Task.Delay(settings.SamplingIntervalSeconds * 1);
+                await Task.Delay(settings.SamplingIntervalSeconds * 1000);
 
                 var body = e.Body.ToArray();
 
@@ -129,6 +141,8 @@ namespace MessageProcessingAnomalyDetection.Receivers
                 Console.WriteLine("_____________________________________________________");
 
                 statistics.Add(statistic);
+
+                await Database.Insert(statistic);
 
                 channel.BasicAck(e.DeliveryTag, false);
             }

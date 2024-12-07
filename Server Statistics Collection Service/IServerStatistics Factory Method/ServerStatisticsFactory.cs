@@ -11,7 +11,6 @@ namespace Server_Statistics_Collection_Service.Extentions
 #pragma warning disable
 
             var cpu = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-            cpu.NextValue();
             var cpuUsage = cpu.NextValue();
 
             var memory = new PerformanceCounter("Memory", "Available MBytes");
