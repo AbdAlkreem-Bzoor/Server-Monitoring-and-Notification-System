@@ -4,21 +4,14 @@ using Server_Statistics_Collection_Service.Message_Queue.RabbitMQ;
 
 IServerStatisticsFactory factory = new ServerStatisticsFactory();
 
-while (true)
+
+IServerStatistics statistics = factory.GetStatistics();
+
+IMessageQueuePublisher publisher = new RabbitMQPublisher(statistics);
+
+
+if (!publisher.PublishMessages(20))
 {
-    IServerStatistics statistics = factory.GetStatistics();
-
-    IMessageQueuePublisher publisher = new RabbitMQPublisher(statistics);
-
-    if (publisher.PublishMessage())
-    {
-        Console.WriteLine(statistics.ToString());
-    }
-    else
-    {
-        Console.WriteLine("Something went wrong with the statistics!");
-        break;
-    }
-
-    await Task.Delay(20000);
+    Console.WriteLine("Something went wrong with the statistics!");
 }
+
