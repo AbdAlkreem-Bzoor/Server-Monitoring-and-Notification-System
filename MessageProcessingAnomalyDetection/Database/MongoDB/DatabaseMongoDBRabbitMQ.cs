@@ -1,11 +1,7 @@
 ﻿using MessageProcessingAnomalyDetection.Interfaces;
-using Microsoft.Extensions.Configuration;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using MessageProcessingAnomalyDetection.Statistics;
-using MongoDB.Bson.IO;
+using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
 
 namespace MessageProcessingAnomalyDetection.Database.MongoDB
 {

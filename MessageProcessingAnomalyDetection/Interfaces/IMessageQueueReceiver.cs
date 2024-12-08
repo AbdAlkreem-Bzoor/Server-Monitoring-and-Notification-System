@@ -1,6 +1,4 @@
-﻿using MongoDB.Driver;
-
-namespace MessageProcessingAnomalyDetection.Interfaces
+﻿namespace MessageProcessingAnomalyDetection.Interfaces
 {
     public interface IMessageQueueReceiver
     {

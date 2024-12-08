@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server Statistics Collectio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageProcessingAnomalyDetection", "MessageProcessingAnomalyDetection\MessageProcessingAnomalyDetection.csproj", "{2084A638-8226-49D1-A37D-D7EBA03997E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR Event Consumer Service", "SignalR Event Consumer Service\SignalR Event Consumer Service.csproj", "{6DD0D932-95D7-4C51-8A46-08F1FDB50149}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task4_RabbitMQClientLibrary", "Task4_RabbitMQClientLibrary\Task4_RabbitMQClientLibrary.csproj", "{0574A543-E56E-40DB-8C57-28F83710740D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{2084A638-8226-49D1-A37D-D7EBA03997E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2084A638-8226-49D1-A37D-D7EBA03997E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2084A638-8226-49D1-A37D-D7EBA03997E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DD0D932-95D7-4C51-8A46-08F1FDB50149}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DD0D932-95D7-4C51-8A46-08F1FDB50149}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DD0D932-95D7-4C51-8A46-08F1FDB50149}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DD0D932-95D7-4C51-8A46-08F1FDB50149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0574A543-E56E-40DB-8C57-28F83710740D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0574A543-E56E-40DB-8C57-28F83710740D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0574A543-E56E-40DB-8C57-28F83710740D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0574A543-E56E-40DB-8C57-28F83710740D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,12 +1,8 @@
-﻿using MessageProcessingAnomalyDetection.Database.MongoDB;
-using MessageProcessingAnomalyDetection.Interfaces;
+﻿using MessageProcessingAnomalyDetection.Interfaces;
 using MessageProcessingAnomalyDetection.Statistics;
 using Microsoft.Extensions.Configuration;
-using MongoDB.Driver;
-using MongoDB.Driver.Core.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Collections;
 using System.Text;
 using System.Text.Json;
 

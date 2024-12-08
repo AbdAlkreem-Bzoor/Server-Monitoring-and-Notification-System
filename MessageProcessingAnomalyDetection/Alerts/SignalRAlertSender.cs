@@ -1,8 +1,6 @@
 ﻿using MessageProcessingAnomalyDetection.Interfaces;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
-using System;
 
 namespace MessageProcessingAnomalyDetection.Alerts
 {
