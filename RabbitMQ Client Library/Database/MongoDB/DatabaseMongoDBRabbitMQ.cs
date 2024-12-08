@@ -1,15 +1,15 @@
-﻿using MessageProcessingAnomalyDetection.Interfaces;
-using MessageProcessingAnomalyDetection.Statistics;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
+using Rabbit_MQ_Client_Library.Interfaces;
+using Rabbit_MQ_Client_Library.Statistics;
 
-namespace MessageProcessingAnomalyDetection.Database.MongoDB
+namespace Rabbit_MQ_Client_Library.Database.MongoDB
 {
     public class DatabaseMongoDBRabbitMQ : IDatabaseMongoDB
     {
         private readonly MongoClient client;
         private readonly IMongoDatabase db;
-        private readonly IMongoCollection<ServerStatistics> collection;
+        private readonly IMongoCollection<IServerStatistics> collection;
 
         public DatabaseMongoDBRabbitMQ()
         {
@@ -25,7 +25,7 @@ namespace MessageProcessingAnomalyDetection.Database.MongoDB
 
             client = new MongoClient(settings.ConnectionString);
             db = client.GetDatabase(settings.DatabaseName);
-            collection = db.GetCollection<ServerStatistics>(settings.CollectionName);
+            collection = db.GetCollection<IServerStatistics>(settings.CollectionName);
         }
 
         public Task<bool> Delete(IServerStatistics statistics, bool deleteMany)
@@ -48,4 +48,5 @@ namespace MessageProcessingAnomalyDetection.Database.MongoDB
             throw new NotImplementedException();
         }
     }
+
 }

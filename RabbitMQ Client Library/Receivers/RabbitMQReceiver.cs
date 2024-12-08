@@ -1,12 +1,12 @@
-﻿using MessageProcessingAnomalyDetection.Interfaces;
-using MessageProcessingAnomalyDetection.Statistics;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
+using Rabbit_MQ_Client_Library.Interfaces;
+using Rabbit_MQ_Client_Library.Statistics;
 
-namespace MessageProcessingAnomalyDetection.Receivers
+namespace Rabbit_MQ_Client_Library.Receivers
 {
     public class RabbitMQReceiver : IMessageQueueReceiver
     {
@@ -145,11 +145,12 @@ namespace MessageProcessingAnomalyDetection.Receivers
 
             var consumerTag = channel.BasicConsume(queueName, false, consumer);
 
-            Thread.Sleep(settings.SamplingIntervalSeconds * 1);
+            Thread.Sleep(settings.SamplingIntervalSeconds * 1000);
 
             channel.BasicCancel(consumerTag);
 
             return statistics;
         }
     }
+
 }

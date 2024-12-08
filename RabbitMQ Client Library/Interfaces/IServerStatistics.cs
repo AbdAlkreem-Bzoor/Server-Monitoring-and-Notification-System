@@ -1,4 +1,4 @@
-﻿namespace MessageProcessingAnomalyDetection.Interfaces
+﻿namespace Rabbit_MQ_Client_Library.Interfaces
 {
     public interface IServerStatistics
     {

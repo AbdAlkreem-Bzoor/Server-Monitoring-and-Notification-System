@@ -1,8 +1,8 @@
-﻿using MessageProcessingAnomalyDetection.Interfaces;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Rabbit_MQ_Client_Library.Interfaces;
 
-namespace MessageProcessingAnomalyDetection.Statistics
+namespace Rabbit_MQ_Client_Library.Statistics
 {
     public class ServerStatistics : IServerStatistics
     {
@@ -23,4 +23,5 @@ namespace MessageProcessingAnomalyDetection.Statistics
                    $"Server Identifier: {ServerIdentifier}";
         }
     }
+
 }

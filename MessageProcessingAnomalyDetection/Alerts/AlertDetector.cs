@@ -28,9 +28,9 @@ namespace MessageProcessingAnomalyDetection.Alerts
             if (Statistics is not null)
             {
                 CheckAnomalyAlerts(statistics);
-                CheckHighUsageAlerts(statistics);
             }
             Statistics = statistics;
+            CheckHighUsageAlerts();
         }
         public void CheckAnomalyAlerts(IServerStatistics statistics)
         {
@@ -50,21 +50,21 @@ namespace MessageProcessingAnomalyDetection.Alerts
                 _sender.SendAlertAsync("Memory Usage Anomaly Alert").Wait();
         }
 
-        public void CheckHighUsageAlerts(IServerStatistics statistics)
+        public void CheckHighUsageAlerts()
         {
-            CheckMemoryHighUsageAlert(statistics);
-            CheckCPUHighUsageAlert(statistics);
+            CheckMemoryHighUsageAlert();
+            CheckCPUHighUsageAlert();
         }
 
-        private void CheckCPUHighUsageAlert(IServerStatistics statistics)
+        private void CheckCPUHighUsageAlert()
         {
-            if (statistics.CpuUsage > (Statistics?.CpuUsage * (1 + MemoryUsageThresholdPercentage)))
+            if (Statistics?.CpuUsage > CpuUsageThresholdPercentage)
                 _sender.SendAlertAsync("CPU High Usage Alert").Wait();
         }
 
-        private void CheckMemoryHighUsageAlert(IServerStatistics statistics)
+        private void CheckMemoryHighUsageAlert()
         {
-            if (statistics.MemoryUsage > (Statistics?.MemoryUsage * (1 + CpuUsageThresholdPercentage)))
+            if ((Statistics?.MemoryUsage / (Statistics?.MemoryUsage + Statistics?.AvailableMemory)) > MemoryUsageThresholdPercentage)
                 _sender.SendAlertAsync("Memory High Usage Alert").Wait();
         }
     }
