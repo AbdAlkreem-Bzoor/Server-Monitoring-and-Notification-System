@@ -1,6 +1,6 @@
-﻿using Task4_RabbitMQClientLibrary.Statistics;
+﻿using Rabbit_MQ_Client_Library.Statistics;
 
-namespace Task4_RabbitMQClientLibrary.Interfaces
+namespace Rabbit_MQ_Client_Library.Interfaces
 {
     public interface IDatabaseMongoDB
     {

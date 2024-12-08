@@ -3,10 +3,10 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using Task4_RabbitMQClientLibrary.Interfaces;
-using Task4_RabbitMQClientLibrary.Statistics;
+using Rabbit_MQ_Client_Library.Interfaces;
+using Rabbit_MQ_Client_Library.Statistics;
 
-namespace Task4_RabbitMQClientLibrary.Receivers
+namespace Rabbit_MQ_Client_Library.Receivers
 {
     public class RabbitMQReceiver : IMessageQueueReceiver
     {

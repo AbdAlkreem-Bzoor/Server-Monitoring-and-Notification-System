@@ -1,4 +1,4 @@
-﻿namespace Task4_RabbitMQClientLibrary.Interfaces
+﻿namespace Rabbit_MQ_Client_Library.Interfaces
 {
     public interface IServerStatistics
     {

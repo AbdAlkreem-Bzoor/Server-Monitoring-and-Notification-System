@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
-using Task4_RabbitMQClientLibrary.Interfaces;
-using Task4_RabbitMQClientLibrary.Statistics;
+using Rabbit_MQ_Client_Library.Interfaces;
+using Rabbit_MQ_Client_Library.Statistics;
 
-namespace Task4_RabbitMQClientLibrary.Database.MongoDB
+namespace Rabbit_MQ_Client_Library.Database.MongoDB
 {
     public class DatabaseMongoDBRabbitMQ : IDatabaseMongoDB
     {

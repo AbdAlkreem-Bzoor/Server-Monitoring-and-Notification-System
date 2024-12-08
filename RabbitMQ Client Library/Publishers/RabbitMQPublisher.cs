@@ -2,9 +2,9 @@
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using Task4_RabbitMQClientLibrary.Interfaces;
+using Rabbit_MQ_Client_Library.Interfaces;
 
-namespace Task4_RabbitMQClientLibrary.Publishers
+namespace Rabbit_MQ_Client_Library.Publishers
 {
     public class RabbitMQPublisher : IMessageQueuePublisher
     {

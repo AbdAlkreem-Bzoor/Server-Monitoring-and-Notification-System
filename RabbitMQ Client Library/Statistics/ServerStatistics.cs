@@ -1,8 +1,8 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Task4_RabbitMQClientLibrary.Interfaces;
+using Rabbit_MQ_Client_Library.Interfaces;
 
-namespace Task4_RabbitMQClientLibrary.Statistics
+namespace Rabbit_MQ_Client_Library.Statistics
 {
     public class ServerStatistics : IServerStatistics
     {
