@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="MessageBroker.RabbitMQ/MessageBroker.RabbitMQ.csproj" Id="6c6f7363-a864-422d-9329-b2d67d2a364f" />
+  <Project Path="MessageProcessingAndAnomalyDetection/MessageProcessingAndAnomalyDetection.csproj" Id="af54cd18-09d7-4f3a-957a-5d1a3004c16b" />
+  <Project Path="ServerStatisticsCollectionService/ServerStatisticsCollectionService.csproj" />
+  <Project Path="Shared/Shared.csproj" Id="59705bab-3bc2-478a-b56b-ba5ad77033c9" />
+  <Project Path="SignalREventConsumerService/SignalREventConsumerService.csproj" Id="e5004edc-3316-4a30-9866-9efc924f96c6" />
+  <Project Path="SignalRHub/SignalRHub.csproj" Id="c82cd020-0afc-4706-8045-9e6b21dfacab" />
+</Solution>
