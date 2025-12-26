@@ -6,9 +6,9 @@ using RabbitMQ.Client.Exceptions;
 
 namespace MessageBroker.RabbitMQ.Publishers;
 
-public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
+internal sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
 {
-    private readonly string _publisherName;
+    private readonly string _publisherKey;
 
     private readonly SemaphoreSlim _channelSemaphore = new(1, 1);
 
@@ -21,6 +21,8 @@ public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
 
     private readonly ResiliencePipeline _pipeline;
 
+    private bool _exchangeDeclared = false;
+
     public RabbitMqPublisher(IConnectionFactory factory,
                              ISerializer serializer,
                              ResiliencePipeline pipeline,
@@ -32,10 +34,10 @@ public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
         _pipeline = pipeline;
         _options = options;
 
-        _publisherName = publisherName;
+        _publisherKey = publisherName;
     }
 
-    public string PublisherName => _publisherName;
+    public string PublisherName => _publisherKey;
 
     private async Task<IChannel> GetChannelAsync(CancellationToken cancellationToken = default)
     {
@@ -80,8 +82,13 @@ public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
         }
     }
 
-    public async Task DeclareExchangeAsync(CancellationToken cancellationToken = default)
+    private async Task DeclareExchangeAsync(CancellationToken cancellationToken = default)
     {
+        if (_exchangeDeclared)
+        {
+            return;
+        }
+
         var channel = await GetChannelAsync(cancellationToken);
 
         var exchangeOptions = _options.Exchange;
@@ -92,11 +99,15 @@ public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
                                            exchangeOptions.AutoDelete,
                                            exchangeOptions.Arguments,
                                            cancellationToken: cancellationToken);
+
+        _exchangeDeclared = true;
     }
 
     public async Task PublishAsync<TMeesage>(TMeesage message,
                                              CancellationToken cancellationToken = default)
     {
+        await DeclareExchangeAsync(cancellationToken);
+
         var body = _serializer.Serialize(message);
 
         var publishOptions = _options.Publish;

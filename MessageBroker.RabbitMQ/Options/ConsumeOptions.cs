@@ -7,5 +7,4 @@ public sealed class ConsumeOptions
     public bool Exclusive { get; set; } = false;
     public bool AutoAck { get; set; } = false; 
     public IDictionary<string, object>? Arguments { get; set; } = null;
-    public ushort PrefetchCount { get; set; } = 10;
 }
