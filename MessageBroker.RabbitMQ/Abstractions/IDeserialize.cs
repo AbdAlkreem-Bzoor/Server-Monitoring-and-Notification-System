@@ -7,7 +7,7 @@ public interface IDeserialize
     TMessage Deserialize<TMessage>(byte[] message);
 }
 
-public sealed class JsonMessageDeserialize : IDeserialize
+internal sealed class JsonMessageDeserialize : IDeserialize
 {
     public TMessage Deserialize<TMessage>(byte[] message)
     {

@@ -6,7 +6,7 @@ using RabbitMQ.Client.Exceptions;
 
 namespace MessageBroker.RabbitMQ.Publishers;
 
-public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
+internal sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
 {
     private readonly string _publisherName;
 

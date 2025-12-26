@@ -8,7 +8,7 @@ public interface ISerializer
     byte[] Serialize<TMessage>(TMessage message);
 }
 
-public sealed class JsonMessageSerializer : ISerializer
+internal sealed class JsonMessageSerializer : ISerializer
 {
     public byte[] Serialize<TMessage>(TMessage message)
     {

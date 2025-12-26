@@ -7,7 +7,7 @@ using RabbitMQ.Client.Events;
 
 namespace MessageBroker.RabbitMQ.Consumers;
 
-public class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncDisposable
+internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncDisposable
     where TMessage : class
     where TConsumer : IMessageHandler<TMessage>
 {
