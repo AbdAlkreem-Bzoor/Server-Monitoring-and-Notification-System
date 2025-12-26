@@ -171,10 +171,12 @@ public class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncDis
 
         var consumer = new AsyncEventingBasicConsumer(channel);
 
+        var handlerKey = $"{_consumerName}-Handler";
+
         consumer.ReceivedAsync += async (sender, eventArgs) =>
         {
             using var messageScope = _serviceProvider.CreateScope();
-            var handler = messageScope.ServiceProvider.GetRequiredService<TConsumer>();
+            var handler = messageScope.ServiceProvider.GetRequiredKeyedService<TConsumer>(handlerKey);
 
             try
             {
