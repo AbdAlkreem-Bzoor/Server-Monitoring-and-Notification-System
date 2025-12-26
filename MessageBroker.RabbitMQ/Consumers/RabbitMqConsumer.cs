@@ -11,7 +11,7 @@ internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncD
     where TMessage : class
     where TConsumer : IMessageHandler<TMessage>
 {
-    private readonly string _consumerName;
+    private readonly string _consumerKey;
 
     private readonly SemaphoreSlim _channelSemaphore = new(1, 1);
 
@@ -42,10 +42,10 @@ internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncD
         _options = options;
         _pipeline = pipeline;
 
-        _consumerName = consumerName;
+        _consumerKey = consumerName;
     }
 
-    public string ConsumerName => _consumerName;
+    public string ConsumerName => _consumerKey;
 
     private async Task<IChannel> GetChannelAsync(CancellationToken cancellationToken = default)
     {
@@ -151,7 +151,7 @@ internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncD
         }
 
         using var scope = _serviceProvider.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<TConsumer>();
+        var handler = scope.ServiceProvider.GetRequiredKeyedService<TConsumer>($"{_consumerKey}-Handler");
 
         await _pipeline.ExecuteAsync(async ct =>
         {
@@ -165,13 +165,13 @@ internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncD
 
         }, cancellationToken);
 
-        using var channel = await GetChannelAsync(cancellationToken);
+        var channel = await GetChannelAsync(cancellationToken);
 
         var queueOptions = _options.Queue;
 
         var consumer = new AsyncEventingBasicConsumer(channel);
 
-        var handlerKey = $"{_consumerName}-Handler";
+        var handlerKey = $"{_consumerKey}-Handler";
 
         consumer.ReceivedAsync += async (sender, eventArgs) =>
         {
@@ -183,18 +183,16 @@ internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncD
                 var body = eventArgs.Body.ToArray();
                 var message = _deserialize.Deserialize<TMessage>(body);
 
-                await handler.HandleAsync(message, cancellationToken);
+                await handler.HandleAsync(message, CancellationToken.None);
 
                 await channel.BasicAckAsync(eventArgs.DeliveryTag,
-                                            queueOptions.Ack.Multiple,
-                                            cancellationToken: cancellationToken);
+                                            queueOptions.Ack.Multiple);
             }
             catch (Exception)
             {
                 await channel.BasicNackAsync(eventArgs.DeliveryTag,
                                              queueOptions.Nack.Multiple,
-                                             queueOptions.Nack.Requeue,
-                                             cancellationToken: cancellationToken);
+                                             queueOptions.Nack.Requeue);
 
                 // TODO: handle logging and exceptions
             }
@@ -217,7 +215,7 @@ internal class RabbitMqConsumer<TMessage, TConsumer> : IMessageConsumer, IAsyncD
             return;
         }
 
-        using var channel = await GetChannelAsync(cancellationToken);
+        var channel = await GetChannelAsync(cancellationToken);
 
         await channel.BasicCancelAsync(_consumerTag, cancellationToken: cancellationToken);
 

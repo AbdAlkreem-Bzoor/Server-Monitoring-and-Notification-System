@@ -17,21 +17,25 @@ public static class DependencyInjection
     public static IServiceCollection
         AddRabbitMqPublisher(this IServiceCollection services,
                              string publisherKey,
-                             Action<ConnectionOptions> connectionOptionsAction,
-                             Action<ChannelOptions> channelOptionsAction,
-                             Action<ExchangeOptions> exchangeOptionsAction,
-                             Action<PublishOptions> publishOptionsAction)
+                             Action<IServiceProvider, ConnectionOptions> connectionOptionsAction,
+                             Action<IServiceProvider, ChannelOptions> channelOptionsAction,
+                             Action<IServiceProvider, ExchangeOptions> exchangeOptionsAction,
+                             Action<IServiceProvider, PublishOptions> publishOptionsAction)
     {
-        var options = new RabbitMqOptions();
-
-        connectionOptionsAction(options.Connection);
-        channelOptionsAction(options.Channel);
-        exchangeOptionsAction(options.Exchange);
-        publishOptionsAction(options.Publish);
 
         var optionsKey = $"{publisherKey}-RabbitMQ-Options";
 
-        services.AddKeyedSingleton<RabbitMqOptions>(optionsKey, options);
+        services.AddKeyedSingleton<RabbitMqOptions>(optionsKey, (sp, key) =>
+        {
+            var options = new RabbitMqOptions();
+
+            connectionOptionsAction(sp, options.Connection);
+            channelOptionsAction(sp, options.Channel);
+            exchangeOptionsAction(sp, options.Exchange);
+            publishOptionsAction(sp, options.Publish);
+
+            return options;
+        });
 
         var pipelineKey = $"{publisherKey}-RabbitMQ-Pipeline";
 
@@ -61,16 +65,18 @@ public static class DependencyInjection
 
         var connectionFactoryKey = $"{publisherKey}-RabbitMQ-ConnectionFactory";
 
-        services.AddKeyedSingleton<IConnectionFactory>(connectionFactoryKey,
-           new ConnectionFactory()
-           {
-               HostName = options.Connection.HostName,
-               Port = options.Connection.Port,
-               UserName = options.Connection.UserName,
-               Password = options.Connection.Password,
-               AutomaticRecoveryEnabled = options.Connection.AutomaticRecoveryEnabled
-           }
-        );
+        services.AddKeyedSingleton<IConnectionFactory>(connectionFactoryKey, (sp, key) =>
+        {
+            var options = sp.GetRequiredKeyedService<RabbitMqOptions>(optionsKey);
+
+            return new ConnectionFactory()
+            {
+                HostName = options.Connection.HostName,
+                UserName = options.Connection.UserName,
+                Password = options.Connection.Password,
+                Uri = new Uri(options.Connection.ConnectionString)
+            };
+        });
 
         services.AddKeyedSingleton<IMessagePublisher>(publisherKey, (sp, key) =>
         {
@@ -81,6 +87,8 @@ public static class DependencyInjection
 
             var pipeline = pipelineProvider.GetPipeline(pipelineKey);
 
+            var options = sp.GetRequiredKeyedService<RabbitMqOptions>(optionsKey);
+
             return new RabbitMqPublisher(factory, serializer, pipeline, options, publisherKey);
         });
 
@@ -90,26 +98,28 @@ public static class DependencyInjection
     public static IServiceCollection
        AddRabbitMqConsumer<TMessage, TConsumer>(this IServiceCollection services,
                              string consumerKey,
-                             Action<ConnectionOptions> connectionOptionsAction,
-                             Action<ChannelOptions> channelOptionsAction,
-                             Action<ExchangeOptions> exchangeOptionsAction,
-                             Action<QueueOptions> queueOptionsAction,
-                             Action<ConsumeOptions> consumeOptionsAction)
+                             Action<IServiceProvider, ConnectionOptions> connectionOptionsAction,
+                             Action<IServiceProvider, ChannelOptions> channelOptionsAction,
+                             Action<IServiceProvider, ExchangeOptions> exchangeOptionsAction,
+                             Action<IServiceProvider, QueueOptions> queueOptionsAction,
+                             Action<IServiceProvider, ConsumeOptions> consumeOptionsAction)
         where TMessage : class
         where TConsumer : class, IMessageHandler<TMessage>
     {
-
-        var options = new RabbitMqOptions();
-
-        connectionOptionsAction(options.Connection);
-        channelOptionsAction(options.Channel);
-        exchangeOptionsAction(options.Exchange);
-        queueOptionsAction(options.Queue);
-        consumeOptionsAction(options.Consume);
-
         var optionsKey = $"{consumerKey}-RabbitMQ-Options";
 
-        services.AddKeyedSingleton<RabbitMqOptions>(optionsKey, options);
+        services.AddKeyedSingleton<RabbitMqOptions>(optionsKey, (sp, key) =>
+        {
+            var options = new RabbitMqOptions();
+
+            connectionOptionsAction(sp, options.Connection);
+            channelOptionsAction(sp, options.Channel);
+            exchangeOptionsAction(sp, options.Exchange);
+            queueOptionsAction(sp, options.Queue);
+            consumeOptionsAction(sp, options.Consume);
+
+            return options;
+        });
 
         var pipelineKey = $"{consumerKey}-RabbitMQ-Pipeline";
 
@@ -130,16 +140,18 @@ public static class DependencyInjection
 
         var connectionFactoryKey = $"{consumerKey}-RabbitMQ-ConnectionFactory";
 
-        services.AddKeyedSingleton<IConnectionFactory>(connectionFactoryKey,
-                 new ConnectionFactory()
-                 {
-                     HostName = options.Connection.HostName,
-                     Port = options.Connection.Port,
-                     UserName = options.Connection.UserName,
-                     Password = options.Connection.Password,
-                     AutomaticRecoveryEnabled = options.Connection.AutomaticRecoveryEnabled
-                 }
-        );
+        services.AddKeyedSingleton<IConnectionFactory>(connectionFactoryKey, (sp, key) =>
+        {
+            var options = sp.GetRequiredKeyedService<RabbitMqOptions>(optionsKey);
+
+            return new ConnectionFactory()
+            {
+                HostName = options.Connection.HostName,
+                UserName = options.Connection.UserName,
+                Password = options.Connection.Password,
+                Uri = new Uri(options.Connection.ConnectionString)
+            };
+        });
 
         var handlerKey = $"{consumerKey}-Handler";
 
@@ -154,7 +166,16 @@ public static class DependencyInjection
 
             var pipeline = pipelineProvider.GetPipeline(pipelineKey);
 
+            var options = sp.GetRequiredKeyedService<RabbitMqOptions>(optionsKey);
+
             return new RabbitMqConsumer<TMessage, TConsumer>(factory, deserialize, sp, pipeline, options, consumerKey);
+        });
+
+        services.AddHostedService(sp =>
+        {
+            var consumer = sp.GetRequiredKeyedService<IMessageConsumer>(consumerKey);
+
+            return new ConsumerHostedService(consumer);
         });
 
         return services;

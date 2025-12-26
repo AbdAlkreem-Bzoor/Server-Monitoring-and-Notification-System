@@ -1,7 +1,9 @@
-﻿using MessageProcessingAndAnomalyDetection.Abstractions;
+﻿using MessageBroker.RabbitMQ.Extensions;
+using MessageProcessingAndAnomalyDetection.Abstractions;
 using MessageProcessingAndAnomalyDetection.Connections;
 using MessageProcessingAndAnomalyDetection.Consumers;
 using MessageProcessingAndAnomalyDetection.Data;
+using MessageProcessingAndAnomalyDetection.Handlers;
 using MessageProcessingAndAnomalyDetection.Models;
 using MessageProcessingAndAnomalyDetection.Services;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -59,7 +61,36 @@ builder.ConfigureServices((context, services) =>
 
     services.AddSingleton<IAlertHubEndpoint, AlertHubConnection>();
 
-    services.AddHostedService<ServerStatisticsConsumer>();
+    // services.AddHostedService<ServerStatisticsConsumer>();
+
+    services.AddRabbitMqConsumer<ServerStatistics, AlertHandler>
+    ("ServerStatisticsConsumer", (sp, connectionOptions) =>
+    {
+        var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+
+        connectionOptions.HostName = configuration.HostName;
+        connectionOptions.UserName = configuration.UserName;
+        connectionOptions.Password = configuration.Password;
+        connectionOptions.ConnectionString = configuration.ConnectionString;
+
+    }, (_, _) => { }, 
+    (sp, exchangeOptions) => 
+    {
+        var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+        var serverConfiguration = sp.GetRequiredService<IOptions<ServerStatisticsConfiguration>>().Value;
+
+        exchangeOptions.ExchangeName = configuration.ExchangeName;
+        exchangeOptions.RoutingKey = $"ServerStatistics.{serverConfiguration.ServerIdentifier}";
+    }, 
+    (sp, queueOptions) =>
+    {
+        var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+
+        queueOptions.QueueName = configuration.QueueName;
+        queueOptions.RoutingKey = $"ServerStatistics.*";
+
+    }, (_, _) => { });
+
 });
 
 

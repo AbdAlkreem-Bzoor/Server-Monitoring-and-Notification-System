@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MessageBroker.RabbitMQ.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Quartz;
 using ServerStatisticsCollectionService.Abstractions;
 using ServerStatisticsCollectionService.Background;
-using ServerStatisticsCollectionService.Publishers;
 using ServerStatisticsCollectionService.StatisticsProviders;
 using Shared.Models;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ builder.ConfigureServices((context, services) =>
 
     services.AddOptions<ServerStatisticsConfiguration>().BindConfiguration(nameof(ServerStatisticsConfiguration));
 
-    services.AddSingleton<IServerStatisticsPublisher, ServerStatisticsPublisher>();
+    // services.AddSingleton<IServerStatisticsPublisher, ServerStatisticsPublisher>();
 
     services.AddSingleton<ServerStatisticsProvider>(sp =>
     {
@@ -32,6 +33,32 @@ builder.ConfigureServices((context, services) =>
 
         throw new NotImplementedException();
     });
+
+    services.AddRabbitMqPublisher("ServerStatisticsPublisher",
+        (sp, connectionOptions) =>
+        {
+            var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+
+            connectionOptions.HostName = configuration.HostName;
+            connectionOptions.UserName = configuration.UserName;
+            connectionOptions.Password = configuration.Password;
+            connectionOptions.ConnectionString = configuration.ConnectionString;
+
+        }, (_, _) => { }, (sp, exchangeOptions) =>
+        {
+            var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+            var serverConfiguration = sp.GetRequiredService<IOptions<ServerStatisticsConfiguration>>().Value;
+
+            exchangeOptions.ExchangeName = configuration.ExchangeName;
+            exchangeOptions.RoutingKey = $"ServerStatistics.{serverConfiguration.ServerIdentifier}";
+
+        }, (sp, publishOptions) =>
+        {
+            var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+
+            publishOptions.Expiration = configuration.Expiration;
+
+        });
 
     services.AddQuartz(options =>
     {
