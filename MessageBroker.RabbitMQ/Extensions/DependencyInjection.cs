@@ -17,10 +17,7 @@ public static class DependencyInjection
     public static IServiceCollection
         AddRabbitMqPublisher(this IServiceCollection services,
                              string publisherKey,
-                             Action<IServiceProvider, ConnectionOptions> connectionOptionsAction,
-                             Action<IServiceProvider, ChannelOptions> channelOptionsAction,
-                             Action<IServiceProvider, ExchangeOptions> exchangeOptionsAction,
-                             Action<IServiceProvider, PublishOptions> publishOptionsAction)
+                             Action<IServiceProvider, RabbitMqOptions> optionsAction)
     {
 
         var optionsKey = $"{publisherKey}-RabbitMQ-Options";
@@ -29,10 +26,7 @@ public static class DependencyInjection
         {
             var options = new RabbitMqOptions();
 
-            connectionOptionsAction(sp, options.Connection);
-            channelOptionsAction(sp, options.Channel);
-            exchangeOptionsAction(sp, options.Exchange);
-            publishOptionsAction(sp, options.Publish);
+            optionsAction(sp, options);
 
             return options;
         });
@@ -98,11 +92,7 @@ public static class DependencyInjection
     public static IServiceCollection
        AddRabbitMqConsumer<TMessage, TConsumer>(this IServiceCollection services,
                              string consumerKey,
-                             Action<IServiceProvider, ConnectionOptions> connectionOptionsAction,
-                             Action<IServiceProvider, ChannelOptions> channelOptionsAction,
-                             Action<IServiceProvider, ExchangeOptions> exchangeOptionsAction,
-                             Action<IServiceProvider, QueueOptions> queueOptionsAction,
-                             Action<IServiceProvider, ConsumeOptions> consumeOptionsAction)
+                             Action<IServiceProvider, RabbitMqOptions> optionsAction)
         where TMessage : class
         where TConsumer : class, IMessageHandler<TMessage>
     {
@@ -112,11 +102,7 @@ public static class DependencyInjection
         {
             var options = new RabbitMqOptions();
 
-            connectionOptionsAction(sp, options.Connection);
-            channelOptionsAction(sp, options.Channel);
-            exchangeOptionsAction(sp, options.Exchange);
-            queueOptionsAction(sp, options.Queue);
-            consumeOptionsAction(sp, options.Consume);
+            optionsAction(sp, options);
 
             return options;
         });
@@ -179,5 +165,41 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    public static void AddConnectionOptions
+       (this RabbitMqOptions options, Action<ConnectionOptions> action)
+    {
+        action(options.Connection);
+    }
+
+    public static void AddExchangeOptions
+        (this RabbitMqOptions options, Action<ExchangeOptions> action)
+    {
+        action(options.Exchange);
+    }
+
+    public static void AddQueueOptions
+        (this RabbitMqOptions options, Action<QueueOptions> action)
+    {
+        action(options.Queue);
+    }
+
+    public static void AddPublishOptions
+        (this RabbitMqOptions options, Action<PublishOptions> action)
+    {
+        action(options.Publish);
+    }
+
+    public static void AddConsumeOptions
+        (this RabbitMqOptions options, Action<ConsumeOptions> action)
+    {
+        action(options.Consume);
+    }
+
+    public static void AddChannelOptions
+        (this RabbitMqOptions options, Action<ChannelOptions> action)
+    {
+        action(options.Channel);
     }
 }
