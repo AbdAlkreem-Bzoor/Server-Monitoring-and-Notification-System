@@ -1,7 +1,6 @@
 ﻿using MessageBroker.RabbitMQ.Extensions;
 using MessageProcessingAndAnomalyDetection.Abstractions;
 using MessageProcessingAndAnomalyDetection.Connections;
-using MessageProcessingAndAnomalyDetection.Consumers;
 using MessageProcessingAndAnomalyDetection.Data;
 using MessageProcessingAndAnomalyDetection.Handlers;
 using MessageProcessingAndAnomalyDetection.Models;
@@ -64,32 +63,32 @@ builder.ConfigureServices((context, services) =>
     // services.AddHostedService<ServerStatisticsConsumer>();
 
     services.AddRabbitMqConsumer<ServerStatistics, AlertHandler>
-    ("ServerStatisticsConsumer", (sp, connectionOptions) =>
-    {
-        var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
-
-        connectionOptions.HostName = configuration.HostName;
-        connectionOptions.UserName = configuration.UserName;
-        connectionOptions.Password = configuration.Password;
-        connectionOptions.ConnectionString = configuration.ConnectionString;
-
-    }, (_, _) => { }, 
-    (sp, exchangeOptions) => 
+    ("ServerStatisticsConsumer", (sp, options) =>
     {
         var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
         var serverConfiguration = sp.GetRequiredService<IOptions<ServerStatisticsConfiguration>>().Value;
 
-        exchangeOptions.ExchangeName = configuration.ExchangeName;
-        exchangeOptions.RoutingKey = $"ServerStatistics.{serverConfiguration.ServerIdentifier}";
-    }, 
-    (sp, queueOptions) =>
-    {
-        var configuration = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+        options.AddConnectionOptions(connectionOptions =>
+        {
+            connectionOptions.HostName = configuration.HostName;
+            connectionOptions.UserName = configuration.UserName;
+            connectionOptions.Password = configuration.Password;
+            connectionOptions.ConnectionString = configuration.ConnectionString;
+        });
 
-        queueOptions.QueueName = configuration.QueueName;
-        queueOptions.RoutingKey = $"ServerStatistics.*";
+        options.AddExchangeOptions(exchangeOptions =>
+        {
+            exchangeOptions.ExchangeName = configuration.ExchangeName;
+            exchangeOptions.RoutingKey = $"ServerStatistics.{serverConfiguration.ServerIdentifier}";
+        });
 
-    }, (_, _) => { });
+        options.AddQueueOptions(queueOptions =>
+        {
+            queueOptions.QueueName = configuration.QueueName;
+            queueOptions.RoutingKey = $"ServerStatistics.*";
+        });
+
+    });
 
 });
 
