@@ -4,9 +4,9 @@ public sealed class QueueOptions
 {
     public string QueueName { get; set; } = "queue";
     public string RoutingKey { get; set; } = "routing_key";
-    public QosOptions Qos { get; set; } = new();
-    public AckOptions Ack { get; set; } = new();
-    public NackOptions Nack { get; set; } = new();
+    internal QosOptions Qos { get; set; } = new();
+    internal AckOptions Ack { get; set; } = new();
+    internal NackOptions Nack { get; set; } = new();
     public bool Durable { get; set; } = true;
     public bool Exclusive { get; set; } = false;
     public bool AutoDelete { get; set; } = false;

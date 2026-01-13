@@ -185,6 +185,24 @@ public static class DependencyInjection
         action(options.Queue);
     }
 
+    public static void AddQosOptions
+        (this QueueOptions options, Action<QosOptions> action)
+    {
+        action(options.Qos);
+    }
+
+    public static void AddAckOptions
+        (this QueueOptions options, Action<AckOptions> action)
+    {
+        action(options.Ack);
+    }
+
+    public static void AddNackOptions
+        (this QueueOptions options, Action<NackOptions> action)
+    {
+        action(options.Nack);
+    }
+
     public static void AddPublishOptions
         (this RabbitMqOptions options, Action<PublishOptions> action)
     {
